@@ -61,6 +61,7 @@ public class BrowserView {
     private Button myBackButton;
     private Button myNextButton;
     private Button myHomeButton;
+    private Button myFavoritesButton;
     // favorites
     private ComboBox<String> myFavorites;
     // get strings from resource file
@@ -91,12 +92,22 @@ public class BrowserView {
      * Display given URL.
      */
     public void showPage (String url) {
-        URL valid = myModel.go(url);
-        if (url != null) {
+        
+/*        if (url != null) {
             update(valid);
         }
         else {
             showError("Could not load " + url);
+        }*/
+        
+        try {
+            URL valid = myModel.go(url);
+        	update(valid);
+        }
+        
+        catch (BrowserException be) {
+        	System.out.println("URL is not valid");
+        	showError(String.format("The URL %s is not a valid URL", url));
         }
     }
 
@@ -126,12 +137,22 @@ public class BrowserView {
 
     // move to the next URL in the history
     private void next () {
-        update(myModel.next());
+        try {
+			update(myModel.next());
+		} catch (BrowserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     // move to the previous URL in the history
     private void back () {
-        update(myModel.back());
+        try {
+			update(myModel.back());
+		} catch (BrowserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     // change current URL to the home page, if set
@@ -140,7 +161,7 @@ public class BrowserView {
     }
 
     // change page to favorite choice
-    private void showFavorite (String favorite) {
+    private void showFavorite (String favorite) throws BrowserException {
         showPage(myModel.getFavorite(favorite).toString());
     }
 
@@ -221,10 +242,18 @@ public class BrowserView {
     // make buttons for setting favorites/home URLs
     private Node makePreferencesPanel () {
         HBox result = new HBox();
+        myFavorites = new ComboBox<String>();
+        myFavorites.setPromptText("My Favorites");
         result.getChildren().add(makeButton("SetHomeCommand", event -> {
             myModel.setHome();
             enableButtons();
         }));
+        result.getChildren().add(makeButton("AddFavoriteCommand", event -> {
+            addFavorite();
+            enableButtons();
+        }));
+        result.getChildren().add(myFavorites);
+       // myFavorites.
         return result;
     }
 
